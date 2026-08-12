@@ -1,4 +1,4 @@
-# Playwright + POM — crm-dev.reygom.com
+# Playwright + POM — ReyGom CRM (dev / prod)
 
 Suite de pruebas E2E de frontend con [Playwright](https://playwright.dev/) y TypeScript, organizada con el patron **Page Object Model (POM)**.
 
@@ -19,8 +19,10 @@ playwright-pom-project/
 ├── playwright.config.ts
 ├── tsconfig.json
 ├── package.json
-├── .env                  # Credenciales locales (NO se sube a git)
-└── .env.example           # Plantilla sin valores reales
+├── .env.dev              # Credenciales/URL de desarrollo (NO se sube a git)
+├── .env.prod             # Credenciales/URL de produccion (NO se sube a git)
+├── .env.dev.example       # Plantilla dev sin valores reales
+└── .env.prod.example      # Plantilla prod sin valores reales
 ```
 
 ## Principio POM aplicado
@@ -29,7 +31,7 @@ playwright-pom-project/
 - **Cada pantalla = una clase.** Los locators son propiedades `readonly` inicializadas en el constructor.
 - **`BasePage`** concentra lo comun (navegacion, esperas, screenshots) para no repetir codigo entre paginas.
 - **Fixtures** (`fixtures/pages.fixture.ts`) instancian los Page Objects automaticamente por test, evitando `new LoginPage(page)` repetido.
-- **Datos de prueba separados del codigo** (`test-data/`) y **credenciales fuera del repo** (`.env`, gitignored).
+- **Datos de prueba separados del codigo** (`test-data/`) y **credenciales fuera del repo** (`.env.dev` / `.env.prod`, gitignored).
 
 ## Instalacion
 
@@ -39,20 +41,40 @@ npm install
 npx playwright install --with-deps
 ```
 
-Copia `.env.example` a `.env` si no existe y completa tus credenciales (ya viene configurado con `admin` para este entorno de desarrollo — verifica que sea el correcto):
+Si `.env.dev` o `.env.prod` no existen, copialos de su plantilla y completa las credenciales:
 
 ```bash
-cp .env.example .env
+cp .env.dev.example .env.dev
+cp .env.prod.example .env.prod
 ```
+
+`.env.dev` ya viene con `admin` cargado para `crm-dev.reygom.com` (verifica que siga siendo el usuario correcto). `.env.prod` esta vacio: agrega tus credenciales de produccion ahi antes de correr `test:prod`.
+
+## Ambientes (dev / prod)
+
+`playwright.config.ts` elige el archivo de variables segun `TEST_ENV` (por defecto `dev`):
+
+| TEST_ENV | Archivo      | BASE_URL                     |
+|----------|--------------|-------------------------------|
+| `dev`    | `.env.dev`   | https://crm-dev.reygom.com   |
+| `prod`   | `.env.prod`  | https://crm.reygom.com       |
+
+No pases `TEST_ENV` a mano: usa los scripts npm de abajo, ya lo setean con `cross-env` (compatible Mac/Linux/Windows).
+
+⚠️ **Cuidado al correr contra `prod`**: son pruebas E2E sobre el CRM real. Antes de correr `test:prod` confirma que los tests no hagan altas/bajas/cambios destructivos contra datos productivos, o usa una cuenta de prueba dedicada si el equipo la tiene.
 
 ## Correr los tests
 
 ```bash
-npm test                 # todos los navegadores configurados
-npm run test:headed      # con navegador visible
-npm run test:ui          # modo UI interactivo (recomendado para debug)
-npm run test:chromium    # solo Chromium
-npm run report            # abre el ultimo reporte HTML
+npm run test:dev          # suite completa contra desarrollo (default de `npm test`)
+npm run test:prod         # suite completa contra produccion
+npm run test:dev:ui       # modo UI interactivo contra dev (recomendado para debug)
+npm run test:prod:ui      # modo UI interactivo contra prod
+npm run test:dev:headed   # con navegador visible, contra dev
+npm run test:chromium     # solo Chromium (dev)
+npm run report             # abre el ultimo reporte HTML
+npm run codegen:dev        # graba acciones y genera selectores contra dev
+npm run codegen:prod       # graba acciones y genera selectores contra prod
 ```
 
 ## Estado de los selectores
