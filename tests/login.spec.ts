@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/pages.fixture';
 import { users } from '../test-data/users';
 
-test.describe('Login - crm-dev.reygom.com', () => {
+test.describe('Login - ReyGom CRM', () => {
   test.beforeEach(async ({ loginPage }) => {
     await loginPage.open();
   });
@@ -33,8 +33,9 @@ test.describe('Login - crm-dev.reygom.com', () => {
   }) => {
     await loginPage.loginButton.click();
 
-    // Con campos vacios el formulario no deberia navegar fuera del login.
-    await expect(page).toHaveURL('https://crm-dev.reygom.com/');
+    // URL relativa: Playwright la resuelve contra el baseURL del ambiente
+    // activo (dev o prod), asi el test no queda pegado a un solo entorno.
+    await expect(page).toHaveURL('/');
     await expect(loginPage.usernameInput).toBeVisible();
   });
 });

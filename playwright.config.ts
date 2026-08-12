@@ -1,11 +1,21 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Configuracion central de Playwright.
- * BASE_URL puede sobreescribirse via variable de entorno para correr
- * la suite contra distintos ambientes (dev, staging, prod).
+ *
+ * Ambientes: el archivo de variables se elige con TEST_ENV (dev por
+ * defecto). Cada ambiente vive en su propio .env.<nombre>, gitignored,
+ * con su propio BASE_URL y credenciales:
+ *   TEST_ENV=dev  -> .env.dev  -> https://crm-dev.reygom.com
+ *   TEST_ENV=prod -> .env.prod -> https://crm.reygom.com
+ *
+ * Usa los scripts npm run test:dev / npm run test:prod en vez de setear
+ * TEST_ENV a mano (ver package.json).
  */
+const env = process.env.TEST_ENV ?? 'dev';
+dotenv.config({ path: `.env.${env}` });
+
 export default defineConfig({
   testDir: './tests',
   timeout: 30_000,

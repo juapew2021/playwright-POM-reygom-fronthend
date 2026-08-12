@@ -3,15 +3,20 @@
   "version": "1.0.0",
   "description": "Suite de pruebas E2E con Playwright + TypeScript siguiendo el patron Page Object Model (POM)",
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug",
-    "test:chromium": "playwright test --project=chromium",
-    "test:firefox": "playwright test --project=firefox",
-    "test:webkit": "playwright test --project=webkit",
+    "test": "npm run test:dev",
+    "test:dev": "cross-env TEST_ENV=dev playwright test",
+    "test:prod": "cross-env TEST_ENV=prod playwright test",
+    "test:dev:ui": "cross-env TEST_ENV=dev playwright test --ui",
+    "test:prod:ui": "cross-env TEST_ENV=prod playwright test --ui",
+    "test:dev:headed": "cross-env TEST_ENV=dev playwright test --headed",
+    "test:prod:headed": "cross-env TEST_ENV=prod playwright test --headed",
+    "test:debug": "cross-env TEST_ENV=dev playwright test --debug",
+    "test:chromium": "cross-env TEST_ENV=dev playwright test --project=chromium",
+    "test:firefox": "cross-env TEST_ENV=dev playwright test --project=firefox",
+    "test:webkit": "cross-env TEST_ENV=dev playwright test --project=webkit",
     "report": "playwright show-report",
-    "codegen": "playwright codegen",
+    "codegen:dev": "playwright codegen https://crm-dev.reygom.com",
+    "codegen:prod": "playwright codegen https://crm.reygom.com",
     "install:browsers": "playwright install --with-deps"
   },
   "devDependencies": {
@@ -20,6 +25,7 @@
     "typescript": "^5.6.0"
   },
   "dependencies": {
+    "cross-env": "^7.0.3",
     "dotenv": "^16.4.5"
   }
 }
