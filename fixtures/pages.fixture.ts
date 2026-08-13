@@ -1,6 +1,7 @@
 import { test as base } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
+import { LeadsPage } from '../pages/LeadsPage';
 
 /**
  * Fixture que extiende el `test` base de Playwright para inyectar
@@ -11,6 +12,7 @@ import { DashboardPage } from '../pages/DashboardPage';
 type Pages = {
   loginPage: LoginPage;
   dashboardPage: DashboardPage;
+  leadsPage: LeadsPage;
 };
 
 export const test = base.extend<Pages>({
@@ -19,6 +21,9 @@ export const test = base.extend<Pages>({
   },
   dashboardPage: async ({ page }, use) => {
     await use(new DashboardPage(page));
+  },
+  leadsPage: async ({ page }, use) => {
+    await use(new LeadsPage(page));
   },
 });
 
