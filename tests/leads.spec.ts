@@ -97,5 +97,6 @@ test('se puede eliminar un lead', async ({ leadsPage, page, loginPage }) => {
   await leadsPage.deleteLead(validLead.name);
   await expect(leadsPage.deleteSuccessToast).toBeVisible();
   await expect(page.getByText(validLead.name)).not.toBeVisible();
-});
+});//el campo permite eliminar el leads correctamente y muestra un toast de éxito, además de que el lead ya no aparece en la lista.
+
 
