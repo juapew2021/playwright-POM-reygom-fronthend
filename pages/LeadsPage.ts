@@ -17,6 +17,10 @@ export class LeadsPage extends BasePage {
     this.nameInput = page.getByPlaceholder('Nombre');
     this.emailInput = page.getByPlaceholder('Email');
     this.saveLeadButton = page.getByRole('button', { name: /guardar|crear|save/i });
+    // Inicializar locators dependientes de la página
+    this.confirmDeleteButton = page.getByRole('button', { name: /confirmar/i });
+    this.cancelDeleteButton = page.getByRole('button', { name: /cancelar/i });
+    this.deleteSuccessToast = page.getByText(/Lead eliminado correctamente/i);
   }
 
   async open(): Promise<void> {
@@ -36,6 +40,21 @@ export class LeadsPage extends BasePage {
       }
     }
     await this.saveLeadButton.click();
+    // Esperar que el toast de creación (si aparece) desaparezca para no bloquear botones
+    const createdToast = this.page.getByText(/Lead creado correctamente/i);
+    if (await createdToast.count()) {
+      try {
+        await createdToast.waitFor({ state: 'hidden', timeout: 7000 });
+      } catch {
+        // si no desaparece en tiempo, continuar: siguiente acciones comprobarán visibilidad
+      }
+    }
+    // Asegurar que el lead ya está visible en la lista
+    try {
+      await this.expectLeadVisible(name);
+    } catch {
+      await this.page.waitForTimeout(500);
+    }
   }
 
   async isLoaded(): Promise<boolean> {
@@ -66,4 +85,48 @@ export class LeadsPage extends BasePage {
     const locator = this.page.getByText(name).first();
     await expect(locator).not.toBeVisible({ timeout: 3000 });
   }
-}
+  // Locators y helpers adicionales
+  readonly editButton = (leadCard: Locator) => leadCard.getByRole('button', { name: /editar/i });
+  readonly deleteButton = (leadCard: Locator) => leadCard.getByRole('button', { name: /eliminar|borrar/i });
+  readonly confirmDeleteButton: Locator;
+  readonly cancelDeleteButton: Locator;
+  readonly deleteSuccessToast: Locator;
+
+  // Método: obtener la card de un lead por nombre
+  getLeadCard(name: string): Locator {
+    // Tarjeta principal de lead en el SUT muestra clases concretas (bg-white, rounded-xl, shadow-md)
+    const cardSelector = 'div.bg-white.rounded-xl.shadow-md, div.bg-white.rounded-xl.shadow-md.border';
+    const cards = this.page.locator(cardSelector).filter({ hasText: name });
+    return cards.first();
+  }
+
+  // Método: editar un lead
+  async editLead(currentName: string, newName: string, newEmail: string) {
+    const card = this.getLeadCard(currentName);
+    await card.waitFor({ state: 'visible', timeout: 10000 });
+    await card.scrollIntoViewIfNeeded();
+    const editBtn = card.getByRole('button', { name: /editar/i }).first();
+    await editBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await editBtn.click();
+    await this.nameInput.fill(newName);
+    await this.emailInput.fill(newEmail);
+    await this.saveLeadButton.click();
+  }
+
+  // Método: eliminar un lead
+  async deleteLead(name: string) {
+    const card = this.getLeadCard(name);
+    await card.waitFor({ state: 'visible', timeout: 10000 });
+    await card.scrollIntoViewIfNeeded();
+    const delBtn = card.getByRole('button', { name: /eliminar|borrar/i }).first();
+    await delBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await delBtn.click();
+    await this.confirmDeleteButton.waitFor({ state: 'visible', timeout: 10000 });
+    await this.confirmDeleteButton.click();
+    await this.deleteSuccessToast.waitFor({ state: 'visible', timeout: 5000 });
+  }
+
+   }
+
+  
+

@@ -1,6 +1,11 @@
 import { test, expect } from '../fixtures/pages.fixture';
 import { users } from '../test-data/users';
 
+const validLead = {
+  name: `Lead ${Date.now()}`,
+  email: `lead.${Date.now()}@example.com`,
+};
+
 test.describe('Leads - ReyGom CRM', () => {
   test.beforeEach(async ({ leadsPage, loginPage }) => {
     await loginPage.open();
@@ -14,7 +19,7 @@ test.describe('Leads - ReyGom CRM', () => {
   });
 
   test('se puede crear un lead con todos los campos válidos', async ({ leadsPage }) => {
-    const name = 'Juan Pérez';
+    const name = 'juan perez';
     const email = `juan.perez.${Date.now()}@example.com`; // email único
     const phone = '5551234567';
     await leadsPage.createLead(name, email, phone);
@@ -72,3 +77,25 @@ test('permite crear un lead con email de formato inválido', async ({ leadsPage,
   
   await leadsPage.expectLeadVisible('Luisa García');
 });
+
+test('se puede editar un lead existente', async ({ leadsPage, page, loginPage }) => {
+  await loginPage.open();
+  await loginPage.login(users.admin.username, users.admin.password);
+  await loginPage.expectLoginSuccess();
+  await leadsPage.open();
+  await leadsPage.createLead(validLead.name, validLead.email);
+  await leadsPage.editLead(validLead.name, 'Juan Editado', 'juan.editado@example.com');
+  await expect(page.getByText('Juan Editado').first()).toBeVisible();
+});
+
+test('se puede eliminar un lead', async ({ leadsPage, page, loginPage }) => {
+  await loginPage.open();
+  await loginPage.login(users.admin.username, users.admin.password);
+  await loginPage.expectLoginSuccess();
+  await leadsPage.open();
+  await leadsPage.createLead(validLead.name, validLead.email);
+  await leadsPage.deleteLead(validLead.name);
+  await expect(leadsPage.deleteSuccessToast).toBeVisible();
+  await expect(page.getByText(validLead.name)).not.toBeVisible();
+});
+
