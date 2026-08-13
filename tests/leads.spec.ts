@@ -1,5 +1,6 @@
 import { test, expect } from '../fixtures/pages.fixture';
 import { users } from '../test-data/users';
+import { dataLeads } from '../test-data/dataLeads';
 
 test.describe('Leads - ReyGom CRM', () => {
   test.beforeEach(async ({ leadsPage, loginPage }) => {
@@ -14,9 +15,9 @@ test.describe('Leads - ReyGom CRM', () => {
   });
 
   test('se puede crear un lead con todos los campos válidos', async ({ leadsPage }) => {
-    const name = 'Juan Pérez';
-    const email = `juan.perez.${Date.now()}@example.com`; // email único
-    const phone = '5551234567';
+    const name = dataLeads.nombreCompleto;
+    const email = dataLeads.email; // email único
+    const phone = dataLeads.phone;
     await leadsPage.createLead(name, email, phone);
 
     // AJUSTAR: aún no confirmamos qué pasa tras crear con éxito
